@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edu3D - 3D知识点可视化</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+</head>
+
+<body>
+
+    <header class="main-header">
+        <h1>Edu3D</h1>
+        <p>一个开源的3D知识点动画库，由社区共同构建。</p>
+        <a href="https://github.com/YOUR_USERNAME/YOUR_REPO" class="submit-btn" target="_blank">贡献你的作品</a>
+    </header>
+
+    <main>
+        <div class="controls-container">
+            <div id="tags-container" class="tags-filter">
+                <!-- 标签将由 JS 动态生成 -->
+            </div>
+            <div class="search-wrapper">
+                <img src="./public/assets/search-icon.svg" alt="Search Icon" class="search-icon">
+                <input type="text" id="search-input" placeholder="搜索标题、描述或标签...">
+            </div>
+        </div>
+
+        <div id="cards-grid" class="grid-container">
+            <!-- 卡片将由 JS 动态生成 -->
+            <p class="loading-text">正在加载动画列表...</p>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <p>由开源社区驱动 | <a href="https://github.com/YOUR_USERNAME/YOUR_REPO" target="_blank">查看 GitHub 仓库</a></p>
+    </footer>
+
+</body>
+
+</html>
