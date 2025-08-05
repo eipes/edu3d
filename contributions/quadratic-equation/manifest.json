@@ -1,0 +1,13 @@
+{
+    "title": "一元二次方程",
+    "description": "调整a,b,c的值，观察一元二次方程y=ax^2+bx+c的图像变化。",
+    "author_github": "eipes",
+    "tags": [
+        "数学",
+        "一元二次方程"
+    ],
+    "subject": "数学",
+    "grade_level": [
+        "初中"
+    ]
+}
