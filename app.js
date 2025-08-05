@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         cardsGrid.innerHTML = items.map(item => `
             <div class="card">
-                <img src="../contributions/${item.id}/thumbnail.png" alt="${item.title}" class="card-thumbnail" onerror="this.style.display='none'">
+                <img src="./contributions/${item.id}/thumbnail.png" alt="${item.title}" class="card-thumbnail" onerror="this.style.display='none'">
                 <div class="card-content">
                     <h3 class="card-title">${item.title}</h3>
                     <p class="card-description">${item.description}</p>
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="author">
                             <span class="author-name">${item.author_github}</span>
                         </div>
-                        <a href="../contributions/${item.id}/index.html" target="_blank" class="view-btn">查看</a>
+                        <a href="./contributions/${item.id}/index.html" target="_blank" class="view-btn">查看</a>
                     </div>
                 </div>
             </div>
