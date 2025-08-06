@@ -16,10 +16,26 @@
     "thumbnail": "/contributions/quadratic-equation/thumbnail.png"
   },
   {
+    "id": "cubic-equation",
+    "title": "一元三次方程",
+    "description": "调整a,b,c,d的值，观察一元三次方程 y = ax³ + bx² + cx + d 的图像变化。",
+    "author_github": "eipes",
+    "tags": [
+      "数学",
+      "一元三次方程"
+    ],
+    "subject": "数学",
+    "grade_level": [
+      "高中"
+    ],
+    "url": "/contributions/cubic-equation/index.html",
+    "thumbnail": "/contributions/cubic-equation/thumbnail.png"
+  },
+  {
     "id": "hybrid-orbitals",
     "title": "sp, sp², sp³ 杂化轨道的空间构型",
     "description": "展示 sp, sp², sp³ 三种常见杂化轨道的空间排布和夹角。",
-    "author_github": "your-github-username",
+    "author_github": "eipes",
     "tags": [
       "化学",
       "高中",

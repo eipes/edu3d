@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三次函数 y = ax³+bx²+cx+d 动画演示</title>
+    <style>
+        /* --- 整体布局与样式 (与二次函数demo一致) --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .main-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .side-panel {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            text-align: center;
+            color: #1a237e;
+            margin-top: 0;
+        }
+
+        h2 {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.5em;
+            /* 字体稍小以容纳更长的公式 */
+            color: #00796b;
+            background-color: #e0f2f1;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        /* --- 控制器样式 (与二次函数demo一致) --- */
+        .controls {
+            display: grid;
+            grid-template-columns: 20px 1fr 50px;
+            gap: 15px 10px;
+            align-items: center;
+        }
+
+        .controls label {
+            font-weight: bold;
+            font-size: 1.2em;
+            font-family: 'Times New Roman', Times, serif;
+            color: #3f51b5;
+        }
+
+        .controls input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            outline: none;
+            border-radius: 5px;
+            transition: opacity 0.2s;
+        }
+
+        .controls input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3f51b5;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .controls input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3f51b5;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .controls .value-display {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #d32f2f;
+            text-align: right;
+            width: 50px;
+        }
+
+        /* --- Canvas 画布样式 (与二次函数demo一致) --- */
+        #graph-canvas {
+            border: 1px solid #b0bec5;
+            border-radius: 8px;
+            background-color: #fafafa;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1;
+        }
+
+        /* --- 教研员解读样式 (与二次函数demo一致) --- */
+        .explanation {
+            margin-top: 20px;
+        }
+
+        .explanation h3 {
+            color: #c2185b;
+            border-bottom: 2px solid #f8bbd0;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+
+        .explanation p {
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+
+        .explanation strong {
+            color: #d32f2f;
+            font-family: 'Courier New', Courier, monospace;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <h1>一元三次函数曲线动画演示</h1>
+        <canvas id="graph-canvas" width="500" height="500"></canvas>
+    </div>
+
+    <div class="side-panel">
+        <h2>y = <span id="equation-display">1.0x³ + 0.0x² + 0.0x + 0.0</span></h2>
+
+        <div class="controls">
+            <label for="slider-a">a:</label>
+            <input type="range" id="slider-a" min="-2" max="2" value="1" step="0.1">
+            <span class="value-display" id="value-a">1.0</span>
+
+            <label for="slider-b">b:</label>
+            <input type="range" id="slider-b" min="-5" max="5" value="0" step="0.1">
+            <span class="value-display" id="value-b">0.0</span>
+
+            <label for="slider-c">c:</label>
+            <input type="range" id="slider-c" min="-10" max="10" value="0" step="0.1">
+            <span class="value-display" id="value-c">0.0</span>
+
+            <label for="slider-d">d:</label>
+            <input type="range" id="slider-d" min="-10" max="10" value="0" step="0.1">
+            <span class="value-display" id="value-d">0.0</span>
+        </div>
+
+        <div class="explanation">
+            <h3>教研员解读</h3>
+            <p><strong>系数 a (三次项系数):</strong></p>
+            <ul>
+                <li>决定函数的<strong>“最终走向”</strong>。</li>
+                <li>当 <strong>a > 0</strong> 时，图像从左下角延伸到右上角。</li>
+                <li>当 <strong>a < 0</strong> 时，图像从左上角延伸到右下角。</li>
+                <li><strong>|a|</strong> 越大，图像在远离原点处越<strong>“陡峭”</strong>。</li>
+            </ul>
+            <p><strong>系数 b, c (二次项和一次项系数):</strong></p>
+            <ul>
+                <li>b 和 c 共同决定了函数图像中间部分的<strong>“弯曲形态”</strong>。</li>
+                <li>它们控制着局部极大值（山峰）和局部极小值（山谷）的出现和位置。</li>
+                <li>函数的<strong>拐点</strong>（曲线凹凸性改变的点）位置在 x = -b/(3a)，这说明 <strong>b</strong> 对图像的对称中心有直接影响。</li>
+            </ul>
+            <p><strong>系数 d (常数项):</strong></p>
+            <ul>
+                <li>决定函数图像与 <strong>y 轴的交点</strong>，交点坐标为 <strong>(0, d)</strong>。</li>
+                <li>改变 d 的值，会使整个函数图像沿 y 轴进行<strong>上下平移</strong>。</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 1. 获取 DOM 元素 ---
+            const canvas = document.getElementById('graph-canvas');
+            const ctx = canvas.getContext('2d');
+
+            const sliderA = document.getElementById('slider-a');
+            const sliderB = document.getElementById('slider-b');
+            const sliderC = document.getElementById('slider-c');
+            const sliderD = document.getElementById('slider-d'); // 新增
+
+            const valueA = document.getElementById('value-a');
+            const valueB = document.getElementById('value-b');
+            const valueC = document.getElementById('value-c');
+            const valueD = document.getElementById('value-d'); // 新增
+
+            const equationDisplay = document.getElementById('equation-display');
+
+            // --- 2. 画布基本配置 (与之前一致) ---
+            const width = canvas.width;
+            const height = canvas.height;
+            const origin = { x: width / 2, y: height / 2 };
+            const scale = 20; // 缩放比例：20像素代表1个单位
+
+            // --- 3. 核心绘图函数 ---
+            function draw() {
+                // 获取当前所有滑块的值
+                const a = parseFloat(sliderA.value);
+                const b = parseFloat(sliderB.value);
+                const c = parseFloat(sliderC.value);
+                const d = parseFloat(sliderD.value);
+
+                // 清空画布
+                ctx.clearRect(0, 0, width, height);
+
+                // 绘制坐标系和网格
+                drawGrid();
+                drawAxes();
+
+                // 绘制三次函数曲线
+                drawCubic(a, b, c, d);
+
+                // 更新界面上的数值和方程式
+                updateUI(a, b, c, d);
+            }
+
+            function drawGrid() { // (与之前一致)
+                ctx.beginPath();
+                ctx.strokeStyle = '#e0e0e0';
+                ctx.lineWidth = 0.5;
+                for (let i = scale; i < width; i += scale) {
+                    ctx.moveTo(origin.x + i, 0); ctx.lineTo(origin.x + i, height);
+                    ctx.moveTo(origin.x - i, 0); ctx.lineTo(origin.x - i, height);
+                }
+                for (let i = scale; i < height; i += scale) {
+                    ctx.moveTo(0, origin.y + i); ctx.lineTo(width, origin.y + i);
+                    ctx.moveTo(0, origin.y - i); ctx.lineTo(width, origin.y - i);
+                }
+                ctx.stroke();
+            }
+
+            function drawAxes() { // (与之前一致)
+                ctx.beginPath();
+                ctx.strokeStyle = '#616161';
+                ctx.lineWidth = 1.5;
+                ctx.moveTo(0, origin.y); ctx.lineTo(width, origin.y); // X轴
+                ctx.moveTo(origin.x, 0); ctx.lineTo(origin.x, height); // Y轴
+                ctx.stroke();
+
+                ctx.font = '10px Arial';
+                ctx.fillStyle = '#333';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+                for (let i = scale * 5; i < origin.x; i += scale * 5) {
+                    ctx.fillText(i / scale, origin.x + i, origin.y + 5);
+                    ctx.fillText(-i / scale, origin.x - i, origin.y + 5);
+                }
+                ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+                for (let i = scale * 5; i < origin.y; i += scale * 5) {
+                    ctx.fillText(i / scale, origin.x - 5, origin.y - i);
+                    ctx.fillText(-i / scale, origin.x - 5, origin.y + i);
+                }
+            }
+
+            function drawCubic(a, b, c, d) {
+                ctx.beginPath();
+                ctx.strokeStyle = '#00796b'; // 曲线颜色
+                ctx.lineWidth = 2.5;
+
+                let firstPoint = true;
+
+                // 遍历画布的每一个像素列
+                for (let px = 0; px < width; px++) {
+                    const x = (px - origin.x) / scale;
+                    // **核心计算公式改为三次函数**
+                    const y = a * x * x * x + b * x * x + c * x + d;
+                    const py = origin.y - y * scale;
+
+                    if (py > 0 && py < height) {
+                        if (firstPoint) {
+                            ctx.moveTo(px, py);
+                            firstPoint = false;
+                        } else {
+                            ctx.lineTo(px, py);
+                        }
+                    } else {
+                        firstPoint = true;
+                    }
+                }
+                ctx.stroke();
+            }
+
+            function updateUI(a, b, c, d) {
+                // 更新滑块旁边的数值显示
+                valueA.textContent = a.toFixed(1);
+                valueB.textContent = b.toFixed(1);
+                valueC.textContent = c.toFixed(1);
+                valueD.textContent = d.toFixed(1); // 新增
+
+                // 动态生成美观的方程式字符串
+                let equation = `${a.toFixed(1)}x³`;
+                equation += b >= 0 ? ` + ${b.toFixed(1)}x²` : ` - ${Math.abs(b).toFixed(1)}x²`;
+                equation += c >= 0 ? ` + ${c.toFixed(1)}x` : ` - ${Math.abs(c).toFixed(1)}x`;
+                equation += d >= 0 ? ` + ${d.toFixed(1)}` : ` - ${Math.abs(d).toFixed(1)}`;
+                equationDisplay.innerHTML = equation;
+            }
+
+            // --- 4. 绑定事件监听器 ---
+            sliderA.addEventListener('input', draw);
+            sliderB.addEventListener('input', draw);
+            sliderC.addEventListener('input', draw);
+            sliderD.addEventListener('input', draw); // 新增
+
+            // --- 5. 初始绘制 ---
+            draw();
+        });
+    </script>
+</body>
+
+</html>

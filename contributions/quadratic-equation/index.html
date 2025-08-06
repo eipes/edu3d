@@ -4,447 +4,373 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>sp, sp², sp³ 杂化轨道空间构型</title>
+    <title>二次函数 y = ax² + bx + c 动画演示</title>
     <style>
+        /* --- 整体布局与样式 --- */
         body {
-            margin: 0;
-            overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: #111;
-            color: #fff;
-        }
-
-        canvas {
-            display: block;
-            /* 确保canvas占满body */
-        }
-
-        #info-panel {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            padding: 15px 20px;
-            background-color: rgba(0, 0, 0, 0.65);
-            border-radius: 8px;
-            max-width: 340px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-            z-index: 10;
-        }
-
-        h1 {
-            margin-top: 0;
-            font-size: 1.5em;
-            border-bottom: 1px solid #444;
-            padding-bottom: 10px;
-        }
-
-        #description {
-            font-size: 0.9em;
-            line-height: 1.6;
-            min-height: 60px;
-        }
-
-        #controls {
-            margin-top: 15px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+            background-color: #f0f2f5;
+            color: #333;
             display: flex;
-            gap: 10px;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            gap: 20px;
             flex-wrap: wrap;
         }
 
-        button {
-            padding: 8px 15px;
-            border: 1px solid #555;
-            background-color: #333;
-            color: #fff;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 1em;
-            transition: background-color 0.2s, border-color 0.2s;
-        }
-
-        button:hover {
-            background-color: #444;
-            border-color: #777;
-        }
-
-        button.active {
-            background-color: #007bff;
-            border-color: #007bff;
-            font-weight: bold;
-        }
-
-        button.info-btn {
-            background-color: #28a745;
-            border-color: #28a745;
-        }
-
-        /* 解释弹窗样式 */
-        #explanation-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .main-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 25px;
             width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: none;
-            /* 默认隐藏 */
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(5px);
+            max-width: 500px;
         }
 
-        #explanation-modal {
-            background-color: #282c34;
-            padding: 25px 35px;
-            border-radius: 10px;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        .side-panel {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            width: 100%;
+            max-width: 350px;
         }
 
-        #explanation-modal h2 {
+        h1,
+        h2,
+        h3 {
+            text-align: center;
+            color: #1a237e;
             margin-top: 0;
-            color: #61dafb;
-            border-bottom: 2px solid #61dafb;
-            padding-bottom: 10px;
         }
 
-        #explanation-modal p,
-        #explanation-modal li {
-            font-size: 1rem;
-            line-height: 1.7;
+        h2 {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.8em;
+            color: #c2185b;
+            background-color: #fce4ec;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
 
-        #explanation-modal strong {
-            color: #ffc107;
+        /* --- 控制器样式 --- */
+        .controls {
+            display: grid;
+            grid-template-columns: 20px 1fr 50px;
+            gap: 15px 10px;
+            align-items: center;
         }
 
-        #explanation-modal .conclusion {
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid #444;
-            font-style: italic;
-            color: #ccc;
+        .controls label {
+            font-weight: bold;
+            font-size: 1.2em;
+            font-family: 'Times New Roman', Times, serif;
+            color: #3f51b5;
         }
 
-        #close-modal-btn {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 2.5rem;
-            cursor: pointer;
-            line-height: 1;
-        }
-
-        /* Tooltip 样式 */
-        #tooltip {
-            position: absolute;
-            display: none;
-            padding: 8px 12px;
-            background-color: rgba(0, 0, 0, 0.8);
-            border: 1px solid #aaa;
+        .controls input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            outline: none;
             border-radius: 5px;
-            color: #fff;
-            pointer-events: none;
-            /* 让鼠标事件穿透tooltip */
-            font-size: 14px;
-            z-index: 100;
+            transition: opacity 0.2s;
+        }
+
+        .controls input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3f51b5;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .controls input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3f51b5;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .controls .value-display {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #d32f2f;
+            text-align: right;
+            width: 50px;
+        }
+
+        /* --- Canvas 画布样式 --- */
+        #graph-canvas {
+            border: 1px solid #b0bec5;
+            border-radius: 8px;
+            background-color: #fafafa;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1;
+        }
+
+        /* --- 教研员解读样式 --- */
+        .explanation {
+            margin-top: 20px;
+        }
+
+        .explanation h3 {
+            color: #00796b;
+            border-bottom: 2px solid #b2dfdb;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+
+        .explanation p {
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+
+        .explanation strong {
+            color: #d32f2f;
+            font-family: 'Courier New', Courier, monospace;
         }
     </style>
-    <!-- 使用 importmap 引入 Three.js -->
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
-        }
-    }
-    </script>
 </head>
 
 <body>
 
-    <div id="tooltip"></div>
-
-    <div id="info-panel">
-        <h1>杂化轨道构型</h1>
-        <p id="description"></p>
-        <div id="controls">
-            <button id="btn-sp">sp</button>
-            <button id="btn-sp2">sp²</button>
-            <button id="btn-sp3" class="active">sp³</button>
-            <button id="btn-info" class="info-btn">了解原理</button>
-        </div>
+    <div class="main-container">
+        <h1>二次函数曲线动画演示</h1>
+        <canvas id="graph-canvas" width="500" height="500"></canvas>
     </div>
 
-    <div id="explanation-overlay">
-        <div id="explanation-modal">
-            <button id="close-modal-btn">&times;</button>
-            <h2>什么是杂化轨道理论？</h2>
+    <div class="side-panel">
+        <h2>y = <span id="equation-display">1.0x² + 0.0x + 0.0</span></h2>
 
-            <h4>一、为什么需要它？—— 解释分子的“意外”形状</h4>
-            <p>
-                我们以甲烷 (CH₄) 为例。实验测得，甲烷是一个完美的<strong>正四面体</strong>，四个 C-H 键完全一样，键角都是 109.5°。
-                但问题来了，碳原子的价电子排布是 <code>2s²2p²</code>。<code>s</code> 轨道是球形，<code>p</code>
-                轨道是哑铃形且互相垂直(90°)。用它们怎么也拼不出一个完美的正四面体。理论和现实矛盾了！
-            </p>
+        <div class="controls">
+            <label for="slider-a">a:</label>
+            <input type="range" id="slider-a" min="-5" max="5" value="1" step="0.1">
+            <span class="value-display" id="value-a">1.0</span>
 
-            <h4>二、它是什么？—— 原子轨道的“混合重组”</h4>
-            <p>
-                为了解决这个矛盾，化学家提出了杂化轨道理论。
-                你可以把它想象成“和面团”：<br>
-                <em>假设你有一团球形的 <code>s</code> 面团和三团长条形的 <code>p</code> 面团。为了做出四个一模一样的馒头，你会把这四团面团
-                    <strong>全部揉在一起，形成一团均匀的新面团</strong>，然后再分割成四个形状、大小都相同的新面团。</em>
-                这个“混合重组”的过程，就是 <strong>杂化 (Hybridization)</strong>。
-            </p>
+            <label for="slider-b">b:</label>
+            <input type="range" id="slider-b" min="-10" max="10" value="0" step="0.1">
+            <span class="value-display" id="value-b">0.0</span>
 
-            <h4>三、结果是什么？</h4>
+            <label for="slider-c">c:</label>
+            <input type="range" id="slider-c" min="-10" max="10" value="0" step="0.1">
+            <span class="value-display" id="value-c">0.0</span>
+        </div>
+
+        <div class="explanation">
+            <h3>教研员解读</h3>
+            <p><strong>系数 a (二次项系数):</strong></p>
             <ul>
-                <li><strong>sp³ 杂化 (1个s + 3个p)</strong>：形成 4 个新轨道，伸向正四面体的四个顶点，键角 109.5°。完美解释了甲烷！</li>
-                <li><strong>sp² 杂化 (1个s + 2个p)</strong>：形成 3 个新轨道，分布在同一平面，互成 120°。解释了乙烯 (C₂H₄)。</li>
-                <li><strong>sp 杂化 (1个s + 1个p)</strong>：形成 2 个新轨道，在一条直线上，夹角 180°。解释了乙炔 (C₂H₂)。</li>
+                <li>决定抛物线的<strong>开口方向</strong>和<strong>开口大小</strong>。</li>
+                <li>当 <strong>a > 0</strong> 时，开口向上；当 <strong>a < 0</strong> 时，开口向下。</li>
+                <li><strong>|a|</strong> (a的绝对值) 越大，开口越<strong>窄</strong>；<strong>|a|</strong> 越小，开口越<strong>宽</strong>。
+                </li>
             </ul>
-
-            <p class="conclusion">
-                <strong>结论：</strong>杂化轨道理论是一个强大的模型，它以“轨道混合”的巧思，成功地解释了实验观测到的分子空间构型。
-            </p>
+            <p><strong>系数 b (一次项系数):</strong></p>
+            <ul>
+                <li>与 a 共同决定<strong>对称轴</strong>的位置 (对称轴为 x = -b/2a)。</li>
+                <li>当 <strong>a, b 同号</strong> (都为正或都为负) 时，对称轴在 y 轴<strong>左侧</strong>。</li>
+                <li>当 <strong>a, b 异号</strong> 时，对称轴在 y 轴<strong>右侧</strong>。</li>
+                <li>当 <strong>b = 0</strong> 时，对称轴就是 y 轴。</li>
+            </ul>
+            <p><strong>系数 c (常数项):</strong></p>
+            <ul>
+                <li>决定抛物线与 <strong>y 轴的交点</strong>。</li>
+                <li>交点坐标为 <strong>(0, c)</strong>。调整 c，图像会整体<strong>上下平移</strong>。</li>
+            </ul>
         </div>
     </div>
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 1. 获取 DOM 元素 ---
+            const canvas = document.getElementById('graph-canvas');
+            const ctx = canvas.getContext('2d');
 
-        // --- UI 控制 ---
-        const ui = {
-            description: document.getElementById('description'),
-            buttons: document.querySelectorAll('#controls button:not(.info-btn)'),
-            infoButton: document.getElementById('btn-info'),
-            overlay: document.getElementById('explanation-overlay'),
-            closeModalButton: document.getElementById('close-modal-btn'),
-            tooltip: document.getElementById('tooltip'),
+            const sliderA = document.getElementById('slider-a');
+            const sliderB = document.getElementById('slider-b');
+            const sliderC = document.getElementById('slider-c');
 
-            init() {
-                this.infoButton.addEventListener('click', () => this.showModal());
-                this.closeModalButton.addEventListener('click', () => this.hideModal());
-                this.overlay.addEventListener('click', (e) => {
-                    if (e.target === this.overlay) this.hideModal();
-                });
-            },
+            const valueA = document.getElementById('value-a');
+            const valueB = document.getElementById('value-b');
+            const valueC = document.getElementById('value-c');
 
-            updateDescription(type) {
-                const descriptions = {
-                    sp: "<b>sp 杂化 (直线形)</b>: 1个s轨道和1个p轨道杂化，形成2个sp轨道，夹角180°。例如：C₂H₂ (乙炔)。",
-                    sp2: "<b>sp² 杂化 (平面三角形)</b>: 1个s轨道和2个p轨道杂化，形成3个sp²轨道，夹角120°。例如：C₂H₄ (乙烯)。",
-                    sp3: "<b>sp³ 杂化 (正四面体形)</b>: 1个s轨道和3个p轨道杂化，形成4个sp³轨道，夹角109.5°。例如：CH₄ (甲烷)。"
-                };
-                this.description.innerHTML = descriptions[type];
+            const equationDisplay = document.getElementById('equation-display');
 
-                this.buttons.forEach(btn => {
-                    btn.classList.remove('active');
-                    if (btn.id === `btn-${type}`) {
-                        btn.classList.add('active');
-                    }
-                });
-            },
+            // --- 2. 画布基本配置 ---
+            const width = canvas.width;
+            const height = canvas.height;
+            const origin = { x: width / 2, y: height / 2 };
+            const scale = 20; // 缩放比例：20像素代表1个单位
 
-            showModal() {
-                this.overlay.style.display = 'flex';
-            },
+            // --- 3. 核心绘图函数 ---
+            function draw() {
+                // 获取当前滑块的值
+                const a = parseFloat(sliderA.value);
+                const b = parseFloat(sliderB.value);
+                const c = parseFloat(sliderC.value);
 
-            hideModal() {
-                this.overlay.style.display = 'none';
-            },
+                // 清空画布
+                ctx.clearRect(0, 0, width, height);
 
-            showTooltip(x, y, text) {
-                this.tooltip.style.display = 'block';
-                this.tooltip.style.left = `${x + 15}px`;
-                this.tooltip.style.top = `${y + 15}px`;
-                this.tooltip.innerHTML = text;
-            },
+                // 绘制坐标系和网格
+                drawGrid();
+                drawAxes();
 
-            hideTooltip() {
-                this.tooltip.style.display = 'none';
+                // 绘制二次函数曲线
+                drawParabola(a, b, c);
+
+                // 更新界面上的数值和方程式
+                updateUI(a, b, c);
             }
-        };
-        ui.init();
 
-        // --- Three.js 场景设置 ---
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 5;
+            function drawGrid() {
+                ctx.beginPath();
+                ctx.strokeStyle = '#e0e0e0'; // 网格颜色
+                ctx.lineWidth = 0.5;
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setClearColor(0x111111, 1);
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        document.body.appendChild(renderer.domElement);
-
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.minDistance = 2;
-        controls.maxDistance = 20;
-
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
-        directionalLight.position.set(5, 10, 7.5);
-        scene.add(directionalLight);
-
-        const orbitalGroup = new THREE.Group();
-        scene.add(orbitalGroup);
-
-        const atomGeometry = new THREE.SphereGeometry(0.3, 32, 32);
-        const atomMaterial = new THREE.MeshStandardMaterial({ color: 0xff4444, roughness: 0.5 });
-        const centralAtom = new THREE.Mesh(atomGeometry, atomMaterial);
-        centralAtom.name = "atom"; // 为物体命名
-        orbitalGroup.add(centralAtom);
-
-        const points = [];
-        for (let i = 0; i < 10; i++) {
-            points.push(new THREE.Vector2(Math.sin(i * 0.2) * 0.8, i * 0.2));
-        }
-        points.push(new THREE.Vector2(0, 2));
-        const orbitalShapeGeometry = new THREE.LatheGeometry(points, 32);
-        orbitalShapeGeometry.scale(0.8, 0.8, 0.8);
-
-        const orbitalMaterial = new THREE.MeshStandardMaterial({
-            color: 0x00aaff,
-            opacity: 0.85,
-            transparent: true,
-            side: THREE.DoubleSide,
-            roughness: 0.2,
-            metalness: 0.1
-        });
-
-        function createOrbitalLobe() {
-            const lobe = new THREE.Mesh(orbitalShapeGeometry, orbitalMaterial);
-            lobe.name = "orbital"; // 为物体命名
-            return lobe;
-        }
-
-        function clearOrbitals() {
-            while (orbitalGroup.children.length > 1) {
-                orbitalGroup.remove(orbitalGroup.children[1]);
+                // 绘制垂直网格线
+                for (let i = scale; i < width; i += scale) {
+                    ctx.moveTo(origin.x + i, 0);
+                    ctx.lineTo(origin.x + i, height);
+                    ctx.moveTo(origin.x - i, 0);
+                    ctx.lineTo(origin.x - i, height);
+                }
+                // 绘制水平网格线
+                for (let i = scale; i < height; i += scale) {
+                    ctx.moveTo(0, origin.y + i);
+                    ctx.lineTo(width, origin.y + i);
+                    ctx.moveTo(0, origin.y - i);
+                    ctx.lineTo(width, origin.y - i);
+                }
+                ctx.stroke();
             }
-        }
 
-        function createSpHybridization() {
-            clearOrbitals();
-            ui.updateDescription('sp');
+            function drawAxes() {
+                ctx.beginPath();
+                ctx.strokeStyle = '#616161'; // 坐标轴颜色
+                ctx.lineWidth = 1.5;
 
-            const lobe1 = createOrbitalLobe();
-            lobe1.rotation.z = Math.PI / 2;
-            orbitalGroup.add(lobe1);
+                // X 轴
+                ctx.moveTo(0, origin.y);
+                ctx.lineTo(width, origin.y);
+                // Y 轴
+                ctx.moveTo(origin.x, 0);
+                ctx.lineTo(origin.x, height);
+                ctx.stroke();
 
-            const lobe2 = createOrbitalLobe();
-            lobe2.rotation.z = -Math.PI / 2;
-            orbitalGroup.add(lobe2);
-        }
-
-        function createSp2Hybridization() {
-            clearOrbitals();
-            ui.updateDescription('sp2');
-
-            for (let i = 0; i < 3; i++) {
-                const lobe = createOrbitalLobe();
-                const angle = (i / 3) * Math.PI * 2;
-                lobe.rotation.z = angle;
-                orbitalGroup.add(lobe);
+                // 绘制刻度
+                ctx.font = '10px Arial';
+                ctx.fillStyle = '#333';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                // X轴刻度
+                for (let i = scale; i < origin.x; i += scale) {
+                    if ((i / scale) % 5 === 0) { // 每5个单位一个大刻度
+                        ctx.fillText(i / scale, origin.x + i, origin.y + 5);
+                        ctx.fillText(-i / scale, origin.x - i, origin.y + 5);
+                    }
+                }
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                // Y轴刻度
+                for (let i = scale; i < origin.y; i += scale) {
+                    if ((i / scale) % 5 === 0) { // 每5个单位一个大刻度
+                        ctx.fillText(i / scale, origin.x - 5, origin.y - i);
+                        ctx.fillText(-i / scale, origin.x - 5, origin.y + i);
+                    }
+                }
             }
-        }
 
-        function createSp3Hybridization() {
-            clearOrbitals();
-            ui.updateDescription('sp3');
+            function drawParabola(a, b, c) {
+                // a=0时不是抛物线，为防止性能问题和逻辑错误，直接不画
+                if (Math.abs(a) < 0.01) {
+                    // 可以选择画一条直线 y = bx + c
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#c2185b'; // 曲线颜色
+                    ctx.lineWidth = 2.5;
+                    const startX = -origin.x / scale;
+                    const endX = (width - origin.x) / scale;
+                    const startY = b * startX + c;
+                    const endY = b * endX + c;
+                    ctx.moveTo(origin.x + startX * scale, origin.y - startY * scale);
+                    ctx.lineTo(origin.x + endX * scale, origin.y - endY * scale);
+                    ctx.stroke();
+                    return;
+                }
 
-            const vertices = [
-                new THREE.Vector3(1, 1, 1),
-                new THREE.Vector3(1, -1, -1),
-                new THREE.Vector3(-1, 1, -1),
-                new THREE.Vector3(-1, -1, 1)
-            ];
+                ctx.beginPath();
+                ctx.strokeStyle = '#c2185b'; // 曲线颜色
+                ctx.lineWidth = 2.5;
 
-            vertices.forEach(vertex => {
-                const lobe = createOrbitalLobe();
-                lobe.lookAt(vertex);
-                lobe.rotateX(Math.PI / 2);
-                orbitalGroup.add(lobe);
-            });
-        }
+                let firstPoint = true;
 
-        document.getElementById('btn-sp').addEventListener('click', createSpHybridization);
-        document.getElementById('btn-sp2').addEventListener('click', createSp2Hybridization);
-        document.getElementById('btn-sp3').addEventListener('click', createSp3Hybridization);
+                // 遍历画布的每一个像素列，计算对应的函数值并连接
+                for (let px = 0; px < width; px++) {
+                    // 将画布像素坐标转换为数学坐标
+                    const x = (px - origin.x) / scale;
+                    // 计算 y 值
+                    const y = a * x * x + b * x + c;
+                    // 将数学坐标转换回画布像素坐标
+                    const py = origin.y - y * scale;
 
-        // --- Raycasting 和鼠标事件处理 ---
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-        let currentIntersected = null;
-
-        function onMouseMove(event) {
-            // 将鼠标位置归一化为设备坐标。x 和 y 方向的取值范围是 (-1 to +1)
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-
-            // 通过摄像机和鼠标位置更新射线
-            raycaster.setFromCamera(mouse, camera);
-
-            // 计算物体和射线的焦点
-            const intersects = raycaster.intersectObjects(orbitalGroup.children, true);
-
-            if (intersects.length > 0) {
-                // 如果当前悬停的不是上一个物体
-                if (currentIntersected !== intersects[0].object) {
-                    currentIntersected = intersects[0].object;
-                    let tooltipText = '';
-                    if (currentIntersected.name === 'atom') {
-                        tooltipText = '中心原子 (如碳原子)';
-                    } else if (currentIntersected.name === 'orbital') {
-                        tooltipText = '杂化轨道 (电子云)';
+                    // 如果点在画布可视范围内，则绘制
+                    if (py > 0 && py < height) {
+                        if (firstPoint) {
+                            ctx.moveTo(px, py);
+                            firstPoint = false;
+                        } else {
+                            ctx.lineTo(px, py);
+                        }
+                    } else {
+                        // 如果点移出画布，重置firstPoint，以便下次进入时使用moveTo
+                        firstPoint = true;
                     }
-                    if (tooltipText) {
-                        ui.showTooltip(event.clientX, event.clientY, tooltipText);
-                    }
+                }
+                ctx.stroke();
+            }
+
+            function updateUI(a, b, c) {
+                // 更新滑块旁边的数值显示
+                valueA.textContent = a.toFixed(1);
+                valueB.textContent = b.toFixed(1);
+                valueC.textContent = c.toFixed(1);
+
+                // 动态生成美观的方程式字符串
+                let equation = `${a.toFixed(1)}x²`;
+                if (b >= 0) {
+                    equation += ` + ${b.toFixed(1)}x`;
                 } else {
-                    // 如果还是同一个物体，只更新位置
-                    if (ui.tooltip.style.display === 'block') {
-                        ui.showTooltip(event.clientX, event.clientY, ui.tooltip.innerHTML);
-                    }
+                    equation += ` - ${Math.abs(b).toFixed(1)}x`;
                 }
-            } else {
-                // 如果没有交点
-                if (currentIntersected) {
-                    ui.hideTooltip();
+                if (c >= 0) {
+                    equation += ` + ${c.toFixed(1)}`;
+                } else {
+                    equation += ` - ${Math.abs(c).toFixed(1)}`;
                 }
-                currentIntersected = null;
+                equationDisplay.innerHTML = equation;
             }
-        }
-        window.addEventListener('mousemove', onMouseMove);
 
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            // --- 4. 绑定事件监听器 ---
+            sliderA.addEventListener('input', draw);
+            sliderB.addEventListener('input', draw);
+            sliderC.addEventListener('input', draw);
+
+            // --- 5. 初始绘制 ---
+            draw();
         });
-
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update(); // 仅在 enableDamping=true 时需要
-            renderer.render(scene, camera);
-        }
-
-        // 初始加载 sp³ 构型
-        createSp3Hybridization();
-        animate();
-
     </script>
 </body>
 
