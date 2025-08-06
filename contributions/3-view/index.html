@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>常见几何体三视图 - 交互式 3D 演示 V2.1 (定位修正)</title>
+    <style>
+        /* --- 核心样式 --- */
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+            background-color: #f0f2f5;
+            color: #333;
+            overflow: hidden; /* 防止滚动条出现 */
+            display: flex;
+            height: 100vh;
+        }
+
+        #container {
+            flex-grow: 1;
+            height: 100%;
+        }
+
+        /* --- UI 面板样式 --- */
+        .panel {
+            width: 300px;
+            background-color: #ffffff;
+            padding: 20px;
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .panel-group {
+            border-bottom: 1px solid #e8e8e8;
+            padding-bottom: 20px;
+        }
+        .panel-group:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .panel h2 {
+            font-size: 18px;
+            margin: 0 0 15px 0;
+            color: #1a1a1a;
+            border-left: 4px solid #007bff;
+            padding-left: 10px;
+        }
+
+        .panel h3 {
+            font-size: 14px;
+            color: #666;
+            margin: 15px 0 10px 0;
+            font-weight: 500;
+        }
+
+        /* --- 模型选择样式 --- */
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px 10px;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+            margin-bottom: 5px;
+        }
+        .radio-group input[type="radio"] {
+            margin-right: 10px;
+        }
+        .radio-group label:hover {
+            background-color: #f0f8ff;
+        }
+        .radio-group input[type="radio"]:checked + span {
+            font-weight: 600;
+            color: #007bff;
+        }
+
+        /* --- 视图切换按钮样式 --- */
+        .view-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .view-buttons button {
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            color: #333;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .view-buttons button:hover {
+            background-color: #f0f0f0;
+            border-color: #999;
+        }
+        .view-buttons button.active {
+            background-color: #007bff;
+            color: #fff;
+            border-color: #007bff;
+            font-weight: bold;
+        }
+        .view-buttons button.perspective {
+             grid-column: 1 / -1; /* 跨越两列 */
+        }
+
+        /* --- 信息提示框 --- */
+        #info-box {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            z-index: 5;
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <div class="panel-group">
+            <h2>1. 选择模型</h2>
+            <div class="radio-group" id="model-selector">
+                <h3>基础几何体</h3>
+                <label>
+                    <input type="radio" name="model" value="standard" checked>
+                    <span>标准正方体</span>
+                </label>
+                <label>
+                    <input type="radio" name="model" value="cylinder">
+                    <span>圆柱</span>
+                </label>
+                 <label>
+                    <input type="radio" name="model" value="cone">
+                    <span>圆锥</span>
+                </label>
+                <h3>组合与切割体</h3>
+                <label>
+                    <input type="radio" name="model" value="holed">
+                    <span>中心挖孔组合体</span>
+                </label>
+                <label>
+                    <input type="radio" name="model" value="notched">
+                    <span>L形切角组合体</span>
+                </label>
+                <label>
+                    <input type="radio" name="model" value="cutCube">
+                    <span>削角正方体</span>
+                </label>
+                <label>
+                    <input type="radio" name="model" value="halfCylinderOnCube">
+                    <span>半圆柱组合体</span>
+                </label>
+            </div>
+        </div>
+        <div class="panel-group">
+            <h2>2. 切换视图</h2>
+            <div class="view-buttons" id="view-selector">
+                <button class="perspective active" data-view="perspective">自由观察 (3D)</button>
+                <button data-view="front">主视图 (正面)</button>
+                <button data-view="top">俯视图 (顶面)</button>
+                <button data-view="side">左视图 (左面)</button>
+            </div>
+        </div>
+        <div class="panel-group">
+            <h2>说明</h2>
+            <p id="instruction-text" style="font-size: 14px; line-height: 1.6; color: #555;">
+                欢迎使用三视图教学工具！<br><br>
+                - <b>自由观察</b>: 按住鼠标左键拖动旋转，滚动滚轮缩放，按住右键平移。<br>
+                - <b>三视图</b>: 分别是从物体的正前、正上、正左方向观察到的平面图形。<br>
+                - 注意观察挖孔和切角部分在不同视图中如何体现（实线与虚线）。
+            </p>
+        </div>
+    </div>
+
+    <div id="container"></div>
+    <div id="info-box">当前视图：自由观察 (3D)</div>
+
+    <!-- 1. Import Map -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+        }
+    }
+    </script>
+
+    <!-- 2. Main JavaScript Logic -->
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';
+
+        let scene, renderer, camera, controls, axesHelper, currentObject;
+        let targetPosition = new THREE.Vector3();
+        let targetQuaternion = new THREE.Quaternion();
+        let isTransitioning = false;
+
+        const container = document.getElementById('container');
+        const infoBox = document.getElementById('info-box');
+
+        const CUBE_SIZE = 2;
+        const S = CUBE_SIZE / 2;
+
+        const solidMaterial = new THREE.MeshStandardMaterial({
+            color: 0x007bff, metalness: 0.1, roughness: 0.5,
+        });
+
+        const hiddenLineMaterial = new THREE.LineDashedMaterial({
+            color: 0xffa500, dashSize: CUBE_SIZE / 20, gapSize: CUBE_SIZE / 20, linewidth: 2,
+        });
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xddeeff);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 100);
+            camera.position.set(CUBE_SIZE * 2, CUBE_SIZE * 2, CUBE_SIZE * 2);
+
+            const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
+            scene.add(hemisphereLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 2.0);
+            directionalLight.position.set(5, 10, 7.5);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.camera.top = 4;
+            directionalLight.shadow.camera.bottom = -4;
+            directionalLight.shadow.camera.left = -4;
+            directionalLight.shadow.camera.right = 4;
+            directionalLight.shadow.mapSize.set(1024, 1024);
+            scene.add(directionalLight);
+
+            const ground = new THREE.Mesh(
+                new THREE.PlaneGeometry(20, 20),
+                new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.8 })
+            );
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -S;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            axesHelper = new THREE.AxesHelper(CUBE_SIZE * 1.5);
+            scene.add(axesHelper);
+
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.target.set(0, S, 0); // 设置初始观察中心
+
+            updateModel('standard');
+            bindEventListeners();
+            animate();
+        }
+
+        // --- 模型创建函数库 ---
+
+        function createStandardCube() {
+            const geom = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
+            geom.translate(0, S, 0); // 使其底部在y=0平面
+            return new THREE.Mesh(geom, solidMaterial);
+        }
+
+        function createCylinder() {
+            const geom = new THREE.CylinderGeometry(S, S, CUBE_SIZE, 32);
+            geom.translate(0, S, 0);
+            return new THREE.Mesh(geom, solidMaterial);
+        }
+
+        function createCone() {
+            const geom = new THREE.ConeGeometry(S, CUBE_SIZE, 32);
+            geom.translate(0, S, 0);
+            return new THREE.Mesh(geom, solidMaterial);
+        }
+
+        function createHoledCube() {
+            const group = new THREE.Group();
+            const holeRadius = CUBE_SIZE / 4;
+            const squareShape = new THREE.Shape()
+                .moveTo(-S, -S).lineTo(S, -S).lineTo(S, S).lineTo(-S, S).closePath();
+            const holePath = new THREE.Path().absarc(0, 0, holeRadius, 0, Math.PI * 2, false);
+            squareShape.holes.push(holePath);
+
+            const geom = new THREE.ExtrudeGeometry(squareShape, { depth: CUBE_SIZE, bevelEnabled: false });
+            geom.center(); // 将几何体中心移到原点
+            const holedCube = new THREE.Mesh(geom, solidMaterial);
+            holedCube.rotation.x = -Math.PI / 2;
+            holedCube.position.y = S; // 整体上移，使其底部在y=0
+            group.add(holedCube);
+
+            const hiddenCylinderGeom = new THREE.CylinderGeometry(holeRadius, holeRadius, CUBE_SIZE, 32);
+            hiddenCylinderGeom.translate(0, S, 0);
+            const edges = new THREE.EdgesGeometry(hiddenCylinderGeom);
+            const hiddenLines = new THREE.LineSegments(edges, hiddenLineMaterial);
+            hiddenLines.computeLineDistances();
+            hiddenLines.visible = false;
+            hiddenLines.userData.isHidden = true;
+            group.add(hiddenLines);
+            return group;
+        }
+
+        function createNotchedCube() {
+            const group = new THREE.Group();
+            const box1 = new THREE.Mesh(new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, S), solidMaterial);
+            const box2 = new THREE.Mesh(new THREE.BoxGeometry(S, CUBE_SIZE, S), solidMaterial);
+            box1.position.set(0, S, S / 2);
+            box2.position.set(-S / 2, S, -S / 2);
+            group.add(box1, box2);
+            return group;
+        }
+
+        function createCutCube() {
+            const vertices = [
+                new THREE.Vector3(S, -S, S), new THREE.Vector3(S, -S, -S),
+                new THREE.Vector3(S, S, -S), new THREE.Vector3(-S, -S, -S),
+                new THREE.Vector3(-S, S, -S), new THREE.Vector3(-S, -S, S),
+                new THREE.Vector3(-S, S, 0), new THREE.Vector3(-S, 0, S),
+                new THREE.Vector3(0, S, S)
+            ];
+            const geom = new ConvexGeometry(vertices);
+            geom.translate(0, S, 0);
+            return new THREE.Mesh(geom, solidMaterial);
+        }
+
+        function createHalfCylinderOnCube() {
+            const group = new THREE.Group();
+            const cube = new THREE.Mesh(new THREE.BoxGeometry(CUBE_SIZE, S, CUBE_SIZE), solidMaterial);
+            cube.position.y = S / 2;
+
+            const halfCylinderGeom = new THREE.CylinderGeometry(S, S, CUBE_SIZE, 32, 1, false, 0, Math.PI);
+            const halfCylinder = new THREE.Mesh(halfCylinderGeom, solidMaterial);
+            halfCylinder.rotation.z = Math.PI / 2;
+            halfCylinder.rotation.y = Math.PI / 2;
+            halfCylinder.position.y = S + S / 2;
+
+            group.add(cube, halfCylinder);
+            return group;
+        }
+
+        function updateModel(modelType) {
+            if (currentObject) {
+                scene.remove(currentObject);
+                currentObject.traverse(child => {
+                    if (child.geometry) child.geometry.dispose();
+                });
+            }
+            const modelFuncMap = {
+                standard: createStandardCube,
+                cylinder: createCylinder,
+                cone: createCone,
+                holed: createHoledCube,
+                notched: createNotchedCube,
+                cutCube: createCutCube,
+                halfCylinderOnCube: createHalfCylinderOnCube,
+            };
+            currentObject = modelFuncMap[modelType]();
+            currentObject.traverse(child => { if (child.isMesh) child.castShadow = true; });
+            scene.add(currentObject);
+        }
+
+        // ---【核心修正】的 switchView 函数 ---
+        function switchView(viewType) {
+            isTransitioning = true;
+            controls.enabled = false;
+
+            const orthoSize = CUBE_SIZE * 1.5;
+            const aspect = container.clientWidth / container.clientHeight;
+
+            if (viewType === 'perspective' && !camera.isPerspectiveCamera) {
+                camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 100);
+            } else if (viewType !== 'perspective' && !camera.isOrthographicCamera) {
+                camera = new THREE.OrthographicCamera(-orthoSize * aspect / 2, orthoSize * aspect / 2, orthoSize / 2, -orthoSize / 2, 0.1, 100);
+            }
+            camera.aspect = aspect;
+            camera.updateProjectionMatrix();
+            controls.object = camera;
+
+            const lookAtCenter = new THREE.Vector3(0, S, 0); // 统一观察中心
+            const dist = CUBE_SIZE * 5;
+            let infoText = '';
+
+            switch (viewType) {
+                case 'front':
+                    targetPosition.set(lookAtCenter.x, lookAtCenter.y, lookAtCenter.z + dist);
+                    infoText = "主视图 (从前向后看)";
+                    showHiddenLines(true);
+                    break;
+                case 'top':
+                    targetPosition.set(lookAtCenter.x, lookAtCenter.y + dist, lookAtCenter.z);
+                    infoText = "俯视图 (从上向下看)";
+                    showHiddenLines(true);
+                    break;
+                case 'side':
+                    targetPosition.set(lookAtCenter.x + dist, lookAtCenter.y, lookAtCenter.z);
+                    infoText = "左视图 (从左向右看)";
+                    showHiddenLines(true);
+                    break;
+                case 'perspective':
+                default:
+                    targetPosition.set(CUBE_SIZE * 1.5, CUBE_SIZE * 2, CUBE_SIZE * 2.5);
+                    infoText = "自由观察 (3D)";
+                    showHiddenLines(false);
+                    break;
+            }
+
+            // 使用 lookAt 矩阵精确计算目标旋转
+            const tempMatrix = new THREE.Matrix4();
+            tempMatrix.lookAt(targetPosition, lookAtCenter, camera.up); // camera.up is (0,1,0)
+            targetQuaternion.setFromRotationMatrix(tempMatrix);
+
+            infoBox.textContent = `当前视图：${infoText}`;
+        }
+
+        function showHiddenLines(visible) {
+            if (currentObject) {
+                currentObject.traverse(child => { if (child.userData.isHidden) child.visible = visible; });
+            }
+        }
+
+        function bindEventListeners() {
+            window.addEventListener('resize', () => {
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+                camera.aspect = width / height;
+                if(camera.isOrthographicCamera) {
+                    const aspect = width / height;
+                    const orthoSize = CUBE_SIZE * 1.5;
+                    camera.left = -orthoSize * aspect / 2; camera.right = orthoSize * aspect / 2;
+                    camera.top = orthoSize / 2; camera.bottom = -orthoSize / 2;
+                }
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
+            });
+
+            document.getElementById('model-selector').addEventListener('change', (event) => {
+                updateModel(event.target.value);
+                const currentView = document.querySelector('.view-buttons button.active').dataset.view;
+                if (currentView !== 'perspective') { switchView(currentView); }
+            });
+
+            document.getElementById('view-selector').addEventListener('click', (event) => {
+                if (event.target.tagName === 'BUTTON') {
+                    document.querySelectorAll('.view-buttons button').forEach(btn => btn.classList.remove('active'));
+                    event.target.classList.add('active');
+                    switchView(event.target.dataset.view);
+                }
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (isTransitioning) {
+                camera.position.lerp(targetPosition, 0.1);
+                camera.quaternion.slerp(targetQuaternion, 0.1);
+
+                if (camera.position.distanceTo(targetPosition) < 0.05) {
+                    camera.position.copy(targetPosition);
+                    camera.quaternion.copy(targetQuaternion);
+                    isTransitioning = false;
+                    const isPerspective = document.querySelector('.view-buttons .perspective').classList.contains('active');
+                    controls.enabled = isPerspective;
+                    if(isPerspective) controls.target.set(0, S, 0);
+                }
+            } else if (controls.enabled) {
+                controls.update();
+            }
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
+</body>
+</html>

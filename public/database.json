@@ -1,8 +1,24 @@
 [
   {
+    "id": "3-view",
+    "title": "常见立方体的三视图",
+    "description": "常见立方体的主视图、俯视图和左视图。",
+    "author_github": "eipes",
+    "tags": [
+      "立方体",
+      "三视图"
+    ],
+    "subject": "数学",
+    "grade_level": [
+      "初中"
+    ],
+    "url": "/contributions/3-view/index.html",
+    "thumbnail": "/contributions/3-view/thumbnail.png"
+  },
+  {
     "id": "quadratic-equation",
     "title": "一元二次方程",
-    "description": "调整a,b,c的值，观察一元二次方程y=ax^2+bx+c的图像变化。",
+    "description": "调整a,b,c的值，观察一元二次方程 y=ax²+bx+c 的图像变化。",
     "author_github": "eipes",
     "tags": [
       "数学",
@@ -18,7 +34,7 @@
   {
     "id": "cubic-equation",
     "title": "一元三次方程",
-    "description": "调整a,b,c,d的值，观察一元三次方程 y = ax³ + bx² + cx + d 的图像变化。",
+    "description": "调整a,b,c,d的值，观察一元三次方程 y=ax³+bx²+cx+d 的图像变化。",
     "author_github": "eipes",
     "tags": [
       "数学",
@@ -38,7 +54,6 @@
     "author_github": "eipes",
     "tags": [
       "化学",
-      "高中",
       "杂化轨道"
     ],
     "subject": "化学",
